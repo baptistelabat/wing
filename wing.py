@@ -3,6 +3,8 @@ from geomdl import BSpline
 from geomdl import utilities as utils
 import numpy as np
 import plotly.graph_objs as go
+from geomdl.visualization import VisPlotly
+from geomdl.visualization.VisPlotly import VisConfig
 
 # Type aliases for better readability
 AirfoilPoint = Tuple[float, float, float]
@@ -121,59 +123,34 @@ def nurbs_to_plotly_mesh(
     """
     # Evaluate surface points in a grid (u, v)
     surface_points = nurbs_surface.evalpts
-   
-    # Extract X, Y, Z coordinates from the surface points
-    x_vals = []
-    y_vals = []
-    z_vals = []
-   
-    for pt in surface_points:
-        x_vals.append(pt[0])
-        y_vals.append(pt[1])
-        z_vals.append(pt[2])
-   
-    # Convert the points to a structured grid for plotting
-    x_grid = np.array(x_vals).reshape((num_u, num_v))
-    y_grid = np.array(y_vals).reshape((num_u, num_v))
-    z_grid = np.array(z_vals).reshape((num_u, num_v))
-   
-    # Create Plotly mesh3d object
-    mesh = go.Surface(x=x_grid, y=y_grid, z=z_grid, colorscale='Viridis', opacity=0.7)
-    return mesh
+    config = VisConfig(use_renderer=True)
+    nurbs_surface.vis = VisPlotly.VisSurface(config=config)
+    nurbs_surface.render()
 
-# Example usage
-airfoil_points: List[AirfoilPoint] = [
-    [1.0, 0.0, 0.0], [0.9, 0.05, 0.0], [0.8, 0.08, 0.0], [0.7, 0.10, 0.0],
-    [0.6, 0.08, 0.0], [0.5, 0.06, 0.0], [0.4, 0.04, 0.0], [0.3, 0.02, 0.0],
-    [0.2, 0.01, 0.0], [0.1, 0.0, 0.0], [0.0, 0.0, 0.0]
-]
 
-planform: List[PlanformSection] = [
-    [0, 1.5, 0],   # Root: span=0, chord=1.5, sweep angle=0 degrees
-    [5, 1.0, 5],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
-    [7, 1.0, 5],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
-    [10, 0.5, 10]  # Tip: span=10, chord=0.5, sweep angle=10 degrees
-]
+if __name__ == '__main__':
 
-# Generate the wing geometry (airfoil sections)
-wing_sections = generate_wing_geometry(airfoil_points, planform)
+    # Example usage
+    airfoil_points: List[AirfoilPoint] = [
+        [1.0, 0.0, 0.0], [0.9, 0.05, 0.0], [0.8, 0.08, 0.0], [0.7, 0.10, 0.0],
+        [0.6, 0.08, 0.0], [0.5, 0.06, 0.0], [0.4, 0.04, 0.0], [0.3, 0.02, 0.0],
+        [0.2, 0.01, 0.0], [0.1, 0.0, 0.0], [0.0, 0.0, 0.0]
+    ]
 
-# Create the NURBS surface from the wing sections
-nurbs_surface = create_nurbs_surface_from_sections(wing_sections)
+    planform: List[PlanformSection] = [
+        [0, 1.5, 0],   # Root: span=0, chord=1.5, sweep angle=0 degrees
+        [5, 1.0, 5],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
+        [7, 1.0, 5],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
+        [10, 0.5, 10]  # Tip: span=10, chord=0.5, sweep angle=10 degrees
+    ]
 
-# Convert NURBS surface to Plotly mesh
-nurbs_mesh = nurbs_to_plotly_mesh(nurbs_surface)
+    # Generate the wing geometry (airfoil sections)
+    wing_sections = generate_wing_geometry(airfoil_points, planform)
 
-# Set up the 3D plot layout
-layout = go.Layout(
-    scene=dict(
-        xaxis=dict(title='X (Sweep)'),
-        yaxis=dict(title='Y (Chord)'),
-        zaxis=dict(title='Z (Span)')
-    ),
-    title="NURBS-Based 3D Wing Geometry"
-)
+    # Create the NURBS surface from the wing sections
+    nurbs_surface = create_nurbs_surface_from_sections(wing_sections)
 
-# Create the figure and plot
-fig = go.Figure(data=[nurbs_mesh], layout=layout)
-fig.show()
+    # Convert NURBS surface to Plotly mesh
+    nurbs_to_plotly_mesh(nurbs_surface)
+
+
