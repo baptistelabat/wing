@@ -15,7 +15,8 @@ def scale_and_sweep_airfoil(
     airfoil: List[AirfoilPoint],
     chord: float,
     sweep_angle: float,
-    span_pos: float
+    span_pos: float,
+    reference_chord_line:float = 1/4
 ) -> List[AirfoilPoint]:
     """
     Scales and sweeps the airfoil profile based on the chord length, sweep angle, and span position.
@@ -30,7 +31,7 @@ def scale_and_sweep_airfoil(
         List of (x, y, z) tuples representing the swept and scaled airfoil profile.
     """
     # Scale the airfoil points based on the chord length
-    scaled_airfoil = [[x * chord, y * chord, 0] for x, y, z in airfoil]
+    scaled_airfoil = [[(x-reference_chord_line) * chord, y * chord, 0] for x, y, z in airfoil]
    
     # Calculate the sweep distance
     sweep_dist = span_pos * np.tan(np.radians(sweep_angle))
@@ -86,8 +87,8 @@ def create_nurbs_surface_from_sections(
         raise ValueError("Not enough control points. Need at least degree + 1 in each direction.")
 
     # Set degrees (ensure degrees are less than the number of control points)
-    surface.degree_u = min(num_u - 1, 5)  # Ensure degree <= num_control_points - 1
-    surface.degree_v = min(num_v - 1, 5)
+    surface.degree_u = min(num_u - 1, 15)  # Ensure degree <= num_control_points - 1
+    surface.degree_v = min(num_v - 1, 15)
 
     # Define control points grid from airfoil sections
     control_points = []
@@ -134,20 +135,20 @@ if __name__ == '__main__':
 
     # Example usage
     airfoil_points_extrados: List[AirfoilPoint] = [
-        [1.0, 0.0, 0.0], [0.9, 0.05, 0.0], [0.8, 0.08, 0.0], [0.7, 0.10, 0.0],
-        [0.6, 0.08, 0.0], [0.5, 0.06, 0.0], [0.4, 0.04, 0.0], [0.3, 0.02, 0.0],
-        [0.2, 0.01, 0.0], [0.1, 0.0, 0.0], [0.0, 0.0, 0.0]
+        [0.0, 0.0, 0.0], [0.1, 0.05, 0.0], [0.2, 0.08, 0.0], [0.3, 0.10, 0.0],
+        [0.4, 0.08, 0.0], [0.5, 0.06, 0.0], [0.6, 0.04, 0.0], [0.7, 0.02, 0.0],
+        [0.8, 0.01, 0.0], [0.9, 0.0, 0.0], [1.0, 0.0, 0.0]
     ] # Normalised chord, extrados
     airfoil_points_intrados: List[AirfoilPoint] = [
-        [1.0, 0.0, 0.0], [0.9, 0.0, 0.0], [0.8, 0.0, 0.0], [0.7, 0.0, 0.0],
-        [0.6, 0.0, 0.0], [0.5, 0.0, 0.0], [0.4, 0.0, 0.0], [0.3, 0.0, 0.0],
-        [0.2, 0.0, 0.0], [0.1, 0.0, 0.0], [0.0, 0.0, 0.0]
+        [0.0, 0.0, 0.0], [0.1, 0.0, 0.0], [0.2, 0.0, 0.0], [0.3, 0.0, 0.0],
+        [0.4, 0.0, 0.0], [0.5, 0.0, 0.0], [0.6, 0.0, 0.0], [0.7, 0.0, 0.0],
+        [0.8, 0.0, 0.0], [0.9, 0.0, 0.0], [1.0, 0.0, 0.0]
     ] # Normalised chord, extrados
 
     planform: List[PlanformSection] = [
         [0, 1.0, 0],   # Root: span=0, chord=1.5, sweep angle=0 degrees
-        [5, 1.0, 0],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
-        [7, 1.0, 0],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
+        [5, 0.75, 0],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
+        [7, 0.65, 0],   # Mid: span=5, chord=1.0, sweep angle=5 degrees
         [10, 0.5, 0]  # Tip: span=10, chord=0.5, sweep angle=10 degrees
     ]
 
